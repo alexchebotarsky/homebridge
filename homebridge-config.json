@@ -1,0 +1,21 @@
+{
+  "bridge": {
+    "name": "Homebridge",
+    "username": "0E:D4:35:E9:81:D9",
+    "port": 51127,
+    "pin": "925-34-375",
+    "advertiser": "bonjour-hap"
+  },
+  "accessories": [],
+  "platforms": [
+    {
+      "name": "Config",
+      "port": 8581,
+      "platform": "config"
+    },
+    {
+      "name": "Heatpump",
+      "platform": "HomebridgeHeatpumpPlugin"
+    }
+  ]
+}

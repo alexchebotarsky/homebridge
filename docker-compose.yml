@@ -1,0 +1,12 @@
+services:
+  homebridge:
+    image: homebridge/homebridge:2024-11-29
+    restart: always
+    network_mode: host
+    volumes:
+      - "homebridge-data:/homebridge"
+      - "homebridge-data:/homebridge/config.json"
+      - "./heatpump-homebridge-plugin/dist:/homebridge/node_modules/heatpump-homebridge-plugin"
+volumes:
+  homebridge-data:
+    driver: local
