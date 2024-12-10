@@ -4,8 +4,7 @@ services:
     restart: always
     network_mode: host
     volumes:
-      - "homebridge-data:/homebridge"
-      - "homebridge-data:/homebridge/config.json"
+      - "./homebridge:/homebridge"
       - "./heatpump-homebridge-plugin/dist:/homebridge/node_modules/heatpump-homebridge-plugin"
 volumes:
   homebridge-data:
