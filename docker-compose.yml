@@ -6,6 +6,3 @@ services:
     volumes:
       - "./homebridge:/homebridge"
       - "./heatpump-homebridge-plugin/dist:/homebridge/node_modules/heatpump-homebridge-plugin"
-volumes:
-  homebridge-data:
-    driver: local
