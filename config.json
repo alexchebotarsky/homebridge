@@ -14,8 +14,8 @@
       "platform": "config"
     },
     {
-      "name": "homebridge-heatpump-plugin",
-      "platform": "HeatpumpPlugin",
+      "name": "homebridge-plugin",
+      "platform": "HomebridgePlugin",
       "_bridge": {
         "username": "0E:5F:29:CC:55:C6",
         "port": 34340

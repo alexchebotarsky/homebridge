@@ -1,7 +1,7 @@
 import type { CharacteristicValue, PlatformAccessory, Service } from "homebridge";
 
 import { WebSocket } from "ws";
-import { HeatpumpPluginPlatform } from "./platform.js";
+import { HomebridgePluginPlatform } from "./platform.js";
 import { TemperatureReader, TemperatureReading } from "./temperature_reader.js";
 
 const WEBSOCKET_ENDPOINT = "ws://localhost:8000/ws";
@@ -51,7 +51,7 @@ export class HeatpumpAccessory {
     target_temperature: 20,
   };
 
-  constructor(private readonly platform: HeatpumpPluginPlatform, private readonly accessory: PlatformAccessory) {
+  constructor(private readonly platform: HomebridgePluginPlatform, private readonly accessory: PlatformAccessory) {
     const { manufacturer, model, serialNumber } = accessory.context.device;
 
     // Set accessory information

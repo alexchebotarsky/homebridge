@@ -1,21 +1,22 @@
 {
-  "name": "homebridge-heatpump-plugin",
-  "displayName": "Heatpump Plugin",
+  "name": "homebridge-plugin",
+  "displayName": "Homebridge Plugin",
   "type": "module",
   "version": "1.0.0",
   "private": true,
-  "description": "Heatpump Homebridge plugin",
+  "description": "Homebridge plugin",
   "author": "Alex Chebotarsky",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/alexchebotarsky/heatpump#readme",
+  "homepage": "https://github.com/alexchebotarsky/homebridge#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alexchebotarsky/heatpump.git"
+    "url": "https://github.com/alexchebotarsky/homebridge.git"
   },
   "bugs": {
-    "url": "https://github.com/alexchebotarsky/heatpump/issues"
+    "url": "https://github.com/alexchebotarsky/homebridge/issues"
   },
   "keywords": [
+    "homebridge",
     "homebridge-plugin"
   ],
   "main": "dist/index.js",

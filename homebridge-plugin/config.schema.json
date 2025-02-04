@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "HeatpumpPlugin",
+  "pluginAlias": "HomebridgePlugin",
   "pluginType": "platform",
   "singular": true,
   "strictValidation": false,

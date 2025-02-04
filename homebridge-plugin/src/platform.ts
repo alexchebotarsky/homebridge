@@ -11,7 +11,7 @@ import type {
 import { HeatpumpAccessory } from "./heatpump.js";
 import { PLATFORM_NAME, PLUGIN_NAME } from "./settings.js";
 
-export class HeatpumpPluginPlatform implements DynamicPlatformPlugin {
+export class HomebridgePluginPlatform implements DynamicPlatformPlugin {
   public readonly Service: typeof Service;
   public readonly Characteristic: typeof Characteristic;
 

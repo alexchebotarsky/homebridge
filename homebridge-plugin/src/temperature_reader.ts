@@ -1,4 +1,4 @@
-const API_ENDPOINT = "http://localhost:8000/api";
+const API_ENDPOINT = "http://localhost:8000/api/v1";
 
 export type TemperatureReading = {
   temperature: number;
@@ -14,7 +14,7 @@ export class TemperatureReader {
 
   read(): Promise<TemperatureReading> {
     if (!this.request) {
-      this.request = fetch(`${API_ENDPOINT}/temperature-and-humidity`)
+      this.request = fetch(`${API_ENDPOINT}/heatpump/temperature-and-humidity`)
         .then((res) => res.json())
         .catch((err) => console.log("Error fetching temperature reading:", err))
         .finally(() => {
