@@ -1,0 +1,15 @@
+services:
+  homebridge:
+    build: ./
+    network_mode: host
+    environment:
+      - TZ=Europe/Oslo
+    ports:
+      - "8581:8581"
+    volumes:
+      - data:/homebridge
+      - ./config.json:/homebridge/config.json
+    restart: on-failure
+volumes:
+  data:
+    driver: local

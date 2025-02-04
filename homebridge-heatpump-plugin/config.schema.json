@@ -1,0 +1,10 @@
+{
+  "pluginAlias": "HeatpumpPlugin",
+  "pluginType": "platform",
+  "singular": true,
+  "strictValidation": false,
+  "schema": {
+    "type": "object",
+    "properties": {}
+  }
+}

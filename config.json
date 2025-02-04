@@ -1,0 +1,25 @@
+{
+  "bridge": {
+    "name": "Homebridge",
+    "username": "1D:6D:DF:B4:C9:E9",
+    "port": 51677,
+    "pin": "314-15-926",
+    "advertiser": "avahi"
+  },
+  "accessories": [],
+  "platforms": [
+    {
+      "name": "Config",
+      "port": 8581,
+      "platform": "config"
+    },
+    {
+      "name": "homebridge-heatpump-plugin",
+      "platform": "HeatpumpPlugin",
+      "_bridge": {
+        "username": "0E:5F:29:CC:55:C6",
+        "port": 34340
+      }
+    }
+  ]
+}
