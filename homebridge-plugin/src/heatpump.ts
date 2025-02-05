@@ -1,14 +1,13 @@
 import type { CharacteristicValue, PlatformAccessory, Service } from "homebridge";
 
-import { WebSocket } from "ws";
 import { HomebridgePluginPlatform } from "./platform.js";
 import { TemperatureReader, TemperatureReading } from "./temperature_reader.js";
 
-const WEBSOCKET_ENDPOINT = "ws://localhost:8000/ws";
+const API_ENDPOINT = "http://localhost:8000/api/v1";
 
 type HeatpumpState = {
   mode: Mode;
-  target_temperature: number;
+  targetTemperature: number;
 };
 
 type Mode = "AUTO" | "HEAT" | "COOL" | "OFF";
@@ -45,12 +44,6 @@ export class HeatpumpAccessory {
   private service: Service;
 
   private temperatureSensor: TemperatureReader;
-  private ws: WebSocket;
-  private state: HeatpumpState = {
-    mode: "OFF",
-    target_temperature: 20,
-  };
-
   constructor(private readonly platform: HomebridgePluginPlatform, private readonly accessory: PlatformAccessory) {
     const { manufacturer, model, serialNumber } = accessory.context.device;
 
@@ -99,62 +92,54 @@ export class HeatpumpAccessory {
       .getCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity)
       .onGet(this.getCurrentHumidity.bind(this));
 
-    // WebSocket
-    this.ws = new WebSocket(WEBSOCKET_ENDPOINT);
-
-    this.ws.on("error", (err) => {
-      console.log("WebSocket error:", err);
-    });
-
-    this.ws.on("message", (data) => {
-      this.state = JSON.parse(data.toString());
-
-      this.service.updateCharacteristic(this.platform.Characteristic.TargetHeatingCoolingState, this.getMode());
-      this.service.updateCharacteristic(this.platform.Characteristic.TargetTemperature, this.getTargetTemperature());
-      this.getCurrentState().then((state) => {
-        this.service.updateCharacteristic(this.platform.Characteristic.CurrentHeatingCoolingState, state);
-      });
-    });
-
-    this.temperatureSensor = new TemperatureReader();
+    this.temperatureSensor = new TemperatureReader(`${API_ENDPOINT}/temperature-and-humidity`);
   }
 
-  getMode(): CharacteristicValue {
-    return modeToNumber(this.state.mode);
+  async getMode(): Promise<CharacteristicValue> {
+    const state: HeatpumpState = await fetch(`${API_ENDPOINT}/state`)
+      .then((res) => res.json())
+      .catch((err) => console.log(err));
+
+    return modeToNumber(state.mode);
   }
 
-  setMode(value: CharacteristicValue) {
+  async setMode(value: CharacteristicValue) {
     const mode = numberToMode(value as number);
 
-    this.state.mode = mode;
-
-    this.ws.send(JSON.stringify({ mode: mode }), (err) => {
-      if (err) {
-        console.log("Error sending mode:", err);
-      }
-    });
+    await fetch(`${API_ENDPOINT}/state`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode: mode }),
+    }).catch((err) => console.log(err));
   }
 
-  getTargetTemperature(): CharacteristicValue {
-    return this.state.target_temperature;
+  async getTargetTemperature(): Promise<CharacteristicValue> {
+    const state: HeatpumpState = await fetch(`${API_ENDPOINT}/state`)
+      .then((res) => res.json())
+      .catch((err) => console.log(err));
+
+    return state.targetTemperature;
   }
 
-  setTargetTemperature(value: CharacteristicValue) {
-    this.state.target_temperature = value as number;
-
-    this.ws.send(JSON.stringify({ target_temperature: value }), (err) => {
-      if (err) {
-        console.log("Error sending target temperature:", err);
-      }
-    });
+  async setTargetTemperature(value: CharacteristicValue) {
+    await fetch(`${API_ENDPOINT}/state`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ targetTemperature: value }),
+    }).catch((err) => console.log(err));
   }
 
   async getCurrentState(): Promise<CharacteristicValue> {
-    const reading: TemperatureReading = await this.temperatureSensor.read();
+    const state: HeatpumpState = await fetch(`${API_ENDPOINT}/state`)
+      .then((res) => res.json())
+      .catch((err) => console.log(err));
+    const reading: TemperatureReading = await fetch(`${API_ENDPOINT}/temperature-and-humidity`)
+      .then((res) => res.json())
+      .catch((err) => console.log(err));
 
-    switch (this.state.mode) {
+    switch (state.mode) {
       case "AUTO":
-        if (reading.temperature > this.state.target_temperature) {
+        if (reading.temperature > state.targetTemperature) {
           return this.platform.Characteristic.CurrentHeatingCoolingState.COOL;
         } else {
           return this.platform.Characteristic.CurrentHeatingCoolingState.HEAT;
