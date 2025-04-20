@@ -18,7 +18,9 @@
             "platform": "HomebridgePlugin",
             "_bridge": {
                 "username": "0E:5F:29:CC:55:C6",
-                "port": 34340
+                "port": 34340,
+                "name": "Heatpump",
+                "firmwareRevision": "1.0"
             }
         }
     ]
