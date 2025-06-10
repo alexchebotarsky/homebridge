@@ -81,7 +81,7 @@ export class HeatpumpAccessory {
 
     this.service
       .getCharacteristic(this.platform.Characteristic.CurrentHeatingCoolingState)
-      .onGet(this.getCurrentState.bind(this));
+      .onGet(this.getOperatingState.bind(this));
 
     // Optional Characteristics
     this.service
@@ -129,29 +129,24 @@ export class HeatpumpAccessory {
     }).catch((err) => console.log(err));
   }
 
-  async getCurrentState(): Promise<CharacteristicValue> {
+  async getOperatingState(): Promise<CharacteristicValue> {
     const state: HeatpumpState = await fetch(`${API_ENDPOINT}/state`)
       .then((res) => res.json())
       .catch((err) => console.log(err));
     const reading: TemperatureReading = await fetch(`${API_ENDPOINT}/temperature-and-humidity`)
       .then((res) => res.json())
       .catch((err) => console.log(err));
+    const threshold = 0.5;
 
-    switch (state.mode) {
-      case "AUTO":
-        if (reading.temperature > state.targetTemperature) {
-          return this.platform.Characteristic.CurrentHeatingCoolingState.COOL;
-        } else {
-          return this.platform.Characteristic.CurrentHeatingCoolingState.HEAT;
-        }
-      case "COOL":
-        return this.platform.Characteristic.CurrentHeatingCoolingState.COOL;
-      case "HEAT":
-        return this.platform.Characteristic.CurrentHeatingCoolingState.HEAT;
-      case "OFF":
-      default:
-        return this.platform.Characteristic.CurrentHeatingCoolingState.OFF;
+    if (reading.temperature > state.targetTemperature + threshold && (state.mode === "AUTO" || state.mode === "COOL")) {
+      return this.platform.Characteristic.CurrentHeatingCoolingState.COOL;
     }
+
+    if (reading.temperature < state.targetTemperature - threshold && (state.mode === "AUTO" || state.mode === "HEAT")) {
+      return this.platform.Characteristic.CurrentHeatingCoolingState.HEAT;
+    }
+
+    return this.platform.Characteristic.CurrentHeatingCoolingState.OFF;
   }
 
   async getCurrentTemperature(): Promise<CharacteristicValue> {
