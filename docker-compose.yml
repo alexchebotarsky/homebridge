@@ -1,6 +1,7 @@
 services:
   homebridge:
     build: ./
+    restart: on-failure
     network_mode: host
     environment:
       - TZ=Europe/Oslo
@@ -9,7 +10,6 @@ services:
     volumes:
       - data:/homebridge
       - ./config.json:/homebridge/config.json
-    restart: on-failure
 volumes:
   data:
     driver: local
