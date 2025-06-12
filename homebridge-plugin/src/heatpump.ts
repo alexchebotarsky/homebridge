@@ -2,6 +2,7 @@ import type { CharacteristicValue, PlatformAccessory, Service } from "homebridge
 
 import { HomebridgePluginPlatform } from "./platform.js";
 import { TemperatureReader, TemperatureReading } from "./temperature_reader.js";
+import { PLUGIN_VERSION } from "./settings.js";
 
 const API_ENDPOINT = "http://localhost:8000/api/v1";
 
@@ -53,7 +54,7 @@ export class HeatpumpAccessory {
       .setCharacteristic(this.platform.Characteristic.Manufacturer, manufacturer)
       .setCharacteristic(this.platform.Characteristic.Model, model)
       .setCharacteristic(this.platform.Characteristic.SerialNumber, serialNumber)
-      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, "1.0");
+      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, PLUGIN_VERSION);
 
     // Get the Thermostat service, or create a new one if it doesn't exist
     this.service =

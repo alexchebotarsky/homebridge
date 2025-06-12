@@ -3,3 +3,6 @@ export const PLATFORM_NAME = "HomebridgePlugin";
 
 // This must match the name of your plugin as defined the package.json `name` property
 export const PLUGIN_NAME = "homebridge-plugin";
+
+// This is the version of the plugin
+export const PLUGIN_VERSION = "1.0";
