@@ -1,7 +1,7 @@
 import type { CharacteristicValue, PlatformAccessory, Service } from "homebridge";
 
 import { HomebridgePluginPlatform } from "./platform.js";
-import { TemperatureReader, TemperatureReading } from "./temperature_reader.js";
+import { SingleFlightFetcher } from "./SingleFlightFetcher.js";
 import { PLUGIN_VERSION } from "./settings.js";
 
 const API_ENDPOINT = "http://localhost:8000/api/v1";
@@ -41,10 +41,17 @@ function numberToMode(num: number): Mode {
   }
 }
 
+type TemperatureReading = {
+  temperature: number;
+  humidity: number;
+};
+
 export class HeatpumpAccessory {
   private service: Service;
 
-  private temperatureSensor: TemperatureReader;
+  private heatpumpStateFetcher: SingleFlightFetcher<HeatpumpState>;
+  private temperatureSensorFetcher: SingleFlightFetcher<TemperatureReading>;
+
   constructor(private readonly platform: HomebridgePluginPlatform, private readonly accessory: PlatformAccessory) {
     const { manufacturer, model, serialNumber } = accessory.context.device;
 
@@ -93,13 +100,12 @@ export class HeatpumpAccessory {
       .getCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity)
       .onGet(this.getCurrentHumidity.bind(this));
 
-    this.temperatureSensor = new TemperatureReader(`${API_ENDPOINT}/temperature-and-humidity`);
+    this.heatpumpStateFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/state`);
+    this.temperatureSensorFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/temperature-and-humidity`);
   }
 
   async getMode(): Promise<CharacteristicValue> {
-    const state: HeatpumpState = await fetch(`${API_ENDPOINT}/state`)
-      .then((res) => res.json())
-      .catch((err) => console.log(err));
+    const state = await this.heatpumpStateFetcher.fetch();
 
     return modeToNumber(state.mode);
   }
@@ -115,35 +121,37 @@ export class HeatpumpAccessory {
   }
 
   async getTargetTemperature(): Promise<CharacteristicValue> {
-    const state: HeatpumpState = await fetch(`${API_ENDPOINT}/state`)
-      .then((res) => res.json())
-      .catch((err) => console.log(err));
+    const state = await this.heatpumpStateFetcher.fetch();
 
     return state.targetTemperature;
   }
 
   async setTargetTemperature(value: CharacteristicValue) {
+    const targetTemperature = value as number;
+
     await fetch(`${API_ENDPOINT}/state`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ targetTemperature: value }),
+      body: JSON.stringify({ targetTemperature: targetTemperature }),
     }).catch((err) => console.log(err));
   }
 
   async getOperatingState(): Promise<CharacteristicValue> {
-    const state: HeatpumpState = await fetch(`${API_ENDPOINT}/state`)
-      .then((res) => res.json())
-      .catch((err) => console.log(err));
-    const reading: TemperatureReading = await fetch(`${API_ENDPOINT}/temperature-and-humidity`)
-      .then((res) => res.json())
-      .catch((err) => console.log(err));
+    const state = await this.heatpumpStateFetcher.fetch();
+    const temperatureSensor = await this.temperatureSensorFetcher.fetch();
     const threshold = 0.5;
 
-    if (reading.temperature > state.targetTemperature + threshold && (state.mode === "AUTO" || state.mode === "COOL")) {
+    if (
+      temperatureSensor.temperature > state.targetTemperature + threshold &&
+      (state.mode === "AUTO" || state.mode === "COOL")
+    ) {
       return this.platform.Characteristic.CurrentHeatingCoolingState.COOL;
     }
 
-    if (reading.temperature < state.targetTemperature - threshold && (state.mode === "AUTO" || state.mode === "HEAT")) {
+    if (
+      temperatureSensor.temperature < state.targetTemperature - threshold &&
+      (state.mode === "AUTO" || state.mode === "HEAT")
+    ) {
       return this.platform.Characteristic.CurrentHeatingCoolingState.HEAT;
     }
 
@@ -151,14 +159,14 @@ export class HeatpumpAccessory {
   }
 
   async getCurrentTemperature(): Promise<CharacteristicValue> {
-    const reading: TemperatureReading = await this.temperatureSensor.read();
+    const temperatureSensor = await this.temperatureSensorFetcher.fetch();
 
-    return reading.temperature;
+    return temperatureSensor.temperature;
   }
 
   async getCurrentHumidity(): Promise<CharacteristicValue> {
-    const reading: TemperatureReading = await this.temperatureSensor.read();
+    const temperatureSensor = await this.temperatureSensorFetcher.fetch();
 
-    return reading.humidity;
+    return temperatureSensor.humidity;
   }
 }

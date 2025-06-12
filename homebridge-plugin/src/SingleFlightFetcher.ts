@@ -1,10 +1,5 @@
-export type TemperatureReading = {
-  temperature: number;
-  humidity: number;
-};
-
-export class TemperatureReader {
-  private request: Promise<TemperatureReading> | null;
+export class SingleFlightFetcher<T> {
+  private request: Promise<T> | null;
   private endpoint: string;
 
   constructor(endpoint: string) {
@@ -12,11 +7,11 @@ export class TemperatureReader {
     this.endpoint = endpoint;
   }
 
-  read(): Promise<TemperatureReading> {
+  fetch(): Promise<T> {
     if (!this.request) {
       this.request = fetch(this.endpoint)
         .then((res) => res.json())
-        .catch((err) => console.log("Error fetching temperature reading:", err))
+        .catch((err) => console.log("Error fetching:", err))
         .finally(() => {
           this.request = null;
         });
