@@ -7,6 +7,7 @@ import type {
   PlatformConfig,
   Service,
 } from "homebridge";
+import type { Device } from "./Device.js";
 
 import { HeatpumpAccessory } from "./heatpump.js";
 import { PLATFORM_NAME, PLUGIN_NAME } from "./settings.js";
@@ -42,14 +43,7 @@ export class HomebridgePluginPlatform implements DynamicPlatformPlugin {
   }
 
   registerDevices() {
-    const devices = [
-      {
-        displayName: "Heatpump",
-        manufacturer: "Toshiba",
-        model: "RAS-13SKV-E",
-        serialNumber: "72701548",
-      },
-    ];
+    const devices: Device[] = this.config.devices || [];
     const deviceUUIDs = [];
 
     // Register devices or load them from cache
@@ -59,10 +53,10 @@ export class HomebridgePluginPlatform implements DynamicPlatformPlugin {
 
       // Register accessory if it's not yet registered
       if (!this.accessories.has(uuid)) {
-        this.log.info("Adding new accessory:", device.displayName);
+        this.log.info("Adding new accessory:", device.name);
 
         // Create new accessory
-        const accessory = new this.api.platformAccessory(device.displayName, uuid);
+        const accessory = new this.api.platformAccessory(device.name, uuid);
         accessory.context.device = device;
 
         // Create the accessory handler for the new accessory

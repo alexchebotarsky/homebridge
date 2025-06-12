@@ -5,6 +5,38 @@
   "strictValidation": false,
   "schema": {
     "type": "object",
-    "properties": {}
+    "properties": {
+      "devices": {
+        "type": "array",
+        "title": "Devices",
+        "description": "List of devices to register with the platform.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Name",
+              "description": "Name of the accessory displayed in Homebridge and Apple Home."
+            },
+            "manufacturer": {
+              "type": "string",
+              "title": "Manufacturer",
+              "description": "Manufacturer of the device."
+            },
+            "model": {
+              "type": "string",
+              "title": "Model",
+              "description": "Model name of the device."
+            },
+            "serialNumber": {
+              "type": "string",
+              "title": "Serial Number",
+              "description": "Unique identifier of the device."
+            }
+          },
+          "required": ["name", "manufacturer", "model", "serialNumber"]
+        }
+      }
+    }
   }
 }

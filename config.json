@@ -20,7 +20,15 @@
                 "username": "0E:5F:29:CC:55:C6",
                 "port": 34340,
                 "name": "Homebridge Plugin"
-            }
+            },
+            "devices": [
+                {
+                    "name": "Heatpump",
+                    "manufacturer": "Toshiba",
+                    "model": "RAS-13SKV-E",
+                    "serialNumber": "72701548"
+                }
+            ]
         }
     ]
 }
