@@ -2,6 +2,7 @@ import type { CharacteristicValue, PlatformAccessory, Service } from "homebridge
 
 import { HomebridgePluginPlatform } from "./platform.js";
 import { SingleFlightFetcher } from "./SingleFlightFetcher.js";
+import { Mode, modeToNumber, numberToMode } from "./Mode.js";
 import { PLUGIN_VERSION } from "./settings.js";
 
 const API_ENDPOINT = "http://localhost:8000/api/v1";
@@ -10,36 +11,6 @@ type HeatpumpState = {
   mode: Mode;
   targetTemperature: number;
 };
-
-type Mode = "AUTO" | "HEAT" | "COOL" | "OFF";
-
-function modeToNumber(mode: Mode): number {
-  switch (mode) {
-    case "AUTO":
-      return 3;
-    case "COOL":
-      return 2;
-    case "HEAT":
-      return 1;
-    case "OFF":
-    default:
-      return 0;
-  }
-}
-
-function numberToMode(num: number): Mode {
-  switch (num) {
-    case 3:
-      return "AUTO";
-    case 2:
-      return "COOL";
-    case 1:
-      return "HEAT";
-    case 0:
-    default:
-      return "OFF";
-  }
-}
 
 type TemperatureReading = {
   temperature: number;
