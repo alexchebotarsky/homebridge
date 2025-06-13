@@ -1,9 +1,9 @@
 import type { CharacteristicValue, PlatformAccessory, Service } from "homebridge";
 
-import { HomebridgePluginPlatform } from "./platform.js";
-import { SingleFlightFetcher } from "./SingleFlightFetcher.js";
-import { Mode, modeToNumber, numberToMode } from "./Mode.js";
-import { PLUGIN_VERSION } from "./settings.js";
+import { HomebridgePluginPlatform } from "../platform.js";
+import { SingleFlightFetcher } from "../helpers/SingleFlightFetcher.js";
+import { type Mode, modeToNumber, numberToMode } from "../types/Mode.js";
+import { PLUGIN_VERSION } from "../settings.js";
 
 const API_ENDPOINT = "http://localhost:8000/api/v1";
 
@@ -20,7 +20,7 @@ type TemperatureReading = {
 export class HeatpumpAccessory {
   private service: Service;
 
-  private heatpumpStateFetcher: SingleFlightFetcher<HeatpumpState>;
+  private stateFetcher: SingleFlightFetcher<HeatpumpState>;
   private temperatureSensorFetcher: SingleFlightFetcher<TemperatureReading>;
 
   constructor(private readonly platform: HomebridgePluginPlatform, private readonly accessory: PlatformAccessory) {
@@ -71,12 +71,12 @@ export class HeatpumpAccessory {
       .getCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity)
       .onGet(this.getCurrentHumidity.bind(this));
 
-    this.heatpumpStateFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/state`);
+    this.stateFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/state`);
     this.temperatureSensorFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/temperature-and-humidity`);
   }
 
   async getMode(): Promise<CharacteristicValue> {
-    const state = await this.heatpumpStateFetcher.fetch();
+    const state = await this.stateFetcher.fetch();
 
     return modeToNumber(state.mode);
   }
@@ -92,7 +92,7 @@ export class HeatpumpAccessory {
   }
 
   async getTargetTemperature(): Promise<CharacteristicValue> {
-    const state = await this.heatpumpStateFetcher.fetch();
+    const state = await this.stateFetcher.fetch();
 
     return state.targetTemperature;
   }
@@ -108,7 +108,7 @@ export class HeatpumpAccessory {
   }
 
   async getOperatingState(): Promise<CharacteristicValue> {
-    const state = await this.heatpumpStateFetcher.fetch();
+    const state = await this.stateFetcher.fetch();
     const temperatureSensor = await this.temperatureSensorFetcher.fetch();
     const threshold = 0.5;
 

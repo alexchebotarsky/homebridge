@@ -3,4 +3,5 @@ export type Device = {
   manufacturer: string;
   model: string;
   serialNumber: string;
+  accessoryType: string;
 };

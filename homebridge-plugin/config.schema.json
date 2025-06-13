@@ -32,9 +32,15 @@
               "type": "string",
               "title": "Serial Number",
               "description": "Unique identifier of the device."
+            },
+            "accessoryType": {
+              "type": "string",
+              "title": "Accessory Type",
+              "description": "Type of accessory to initialize.",
+              "enum": ["heatpump", "thermofridge"]
             }
           },
-          "required": ["name", "manufacturer", "model", "serialNumber"]
+          "required": ["name", "manufacturer", "model", "serialNumber", "accessoryType"]
         }
       }
     }

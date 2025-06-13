@@ -7,9 +7,9 @@ import type {
   PlatformConfig,
   Service,
 } from "homebridge";
-import type { Device } from "./Device.js";
+import type { Device } from "./types/Device.js";
 
-import { HeatpumpAccessory } from "./heatpump.js";
+import { AccessoryMap, type AccessoryType } from "./accessories.js";
 import { PLATFORM_NAME, PLUGIN_NAME } from "./settings.js";
 
 export class HomebridgePluginPlatform implements DynamicPlatformPlugin {
@@ -35,8 +35,11 @@ export class HomebridgePluginPlatform implements DynamicPlatformPlugin {
   configureAccessory(accessory: PlatformAccessory) {
     this.log.info("Restoring accessory from cache:", accessory.displayName);
 
-    // Create the accessory handler for the cached accessory
-    new HeatpumpAccessory(this, accessory);
+    const device: Device = accessory.context.device;
+
+    // Create the accessory handler based on the device type
+    const Accessory = AccessoryMap[device.accessoryType as AccessoryType];
+    new Accessory(this, accessory);
 
     // Add cached accessory to the accessories list
     this.accessories.set(accessory.UUID, accessory);
@@ -59,8 +62,9 @@ export class HomebridgePluginPlatform implements DynamicPlatformPlugin {
         const accessory = new this.api.platformAccessory(device.name, uuid);
         accessory.context.device = device;
 
-        // Create the accessory handler for the new accessory
-        new HeatpumpAccessory(this, accessory);
+        // Create the accessory handler based on the device type
+        const Accessory = AccessoryMap[device.accessoryType as AccessoryType];
+        new Accessory(this, accessory);
 
         // Register accessory on the platform
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
