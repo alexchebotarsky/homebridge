@@ -25,7 +25,7 @@ export class ThermofridgeAccessory {
   private currentStateFetcher: SingleFlightFetcher<ThermofridgeCurrentState>;
 
   constructor(private readonly platform: HomebridgePluginPlatform, private readonly accessory: PlatformAccessory) {
-    const { manufacturer, model, serialNumber } = accessory.context.device;
+    const { manufacturer, model, displayName, serialNumber } = accessory.context.device;
 
     // Set accessory information
     this.accessory
@@ -41,7 +41,7 @@ export class ThermofridgeAccessory {
       this.accessory.addService(this.platform.Service.Thermostat);
 
     // Set the service name, this is what is displayed as the default name on the Home app
-    this.service.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.displayName);
+    this.service.setCharacteristic(this.platform.Characteristic.Name, displayName);
 
     // Required Characteristics
     this.service
@@ -68,8 +68,8 @@ export class ThermofridgeAccessory {
       .getCharacteristic(this.platform.Characteristic.CurrentTemperature)
       .onGet(this.getCurrentTemperature.bind(this));
 
-    this.targetStateFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/target-state`);
-    this.currentStateFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/current-state`);
+    this.targetStateFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/target-state/${serialNumber}`);
+    this.currentStateFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/current-state/${serialNumber}`);
   }
 
   async getMode(): Promise<CharacteristicValue> {
@@ -81,7 +81,7 @@ export class ThermofridgeAccessory {
   async setMode(value: CharacteristicValue) {
     const mode = numberToMode(value as number);
 
-    await fetch(`${API_ENDPOINT}/target-state`, {
+    await fetch(`${API_ENDPOINT}/target-state/${this.accessory.context.device.serialNumber}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ mode: mode }),
@@ -97,7 +97,7 @@ export class ThermofridgeAccessory {
   async setTargetTemperature(value: CharacteristicValue) {
     const targetTemperature = value as number;
 
-    await fetch(`${API_ENDPOINT}/target-state`, {
+    await fetch(`${API_ENDPOINT}/target-state/${this.accessory.context.device.serialNumber}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ targetTemperature: targetTemperature }),
