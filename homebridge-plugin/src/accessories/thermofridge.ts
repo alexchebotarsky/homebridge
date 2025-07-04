@@ -25,7 +25,7 @@ export class ThermofridgeAccessory {
   private currentStateFetcher: SingleFlightFetcher<ThermofridgeCurrentState>;
 
   constructor(private readonly platform: HomebridgePluginPlatform, private readonly accessory: PlatformAccessory) {
-    const { manufacturer, model, displayName, serialNumber } = accessory.context.device;
+    const { name, manufacturer, model, serialNumber } = accessory.context.device;
 
     // Set accessory information
     this.accessory
@@ -41,7 +41,7 @@ export class ThermofridgeAccessory {
       this.accessory.addService(this.platform.Service.Thermostat);
 
     // Set the service name, this is what is displayed as the default name on the Home app
-    this.service.setCharacteristic(this.platform.Characteristic.Name, displayName);
+    this.service.setCharacteristic(this.platform.Characteristic.Name, name);
 
     // Required Characteristics
     this.service
