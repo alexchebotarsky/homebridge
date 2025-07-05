@@ -21,18 +21,28 @@ type ThermofridgeCurrentState = {
 export class ThermofridgeAccessory {
   private service: Service;
 
+  private readonly name: string;
+  private readonly manufacturer: string;
+  private readonly serialNumber: string;
+  private readonly model: string;
+
   private targetStateFetcher: SingleFlightFetcher<ThermofridgeTargetState>;
   private currentStateFetcher: SingleFlightFetcher<ThermofridgeCurrentState>;
 
   constructor(private readonly platform: HomebridgePluginPlatform, private readonly accessory: PlatformAccessory) {
     const { name, manufacturer, model, serialNumber } = accessory.context.device;
 
+    this.name = name;
+    this.manufacturer = manufacturer;
+    this.serialNumber = serialNumber;
+    this.model = model;
+
     // Set accessory information
     this.accessory
       .getService(this.platform.Service.AccessoryInformation)!
-      .setCharacteristic(this.platform.Characteristic.Manufacturer, manufacturer)
-      .setCharacteristic(this.platform.Characteristic.Model, model)
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, serialNumber)
+      .setCharacteristic(this.platform.Characteristic.Manufacturer, this.manufacturer)
+      .setCharacteristic(this.platform.Characteristic.Model, this.model)
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, this.serialNumber)
       .setCharacteristic(this.platform.Characteristic.FirmwareRevision, PLUGIN_VERSION);
 
     // Get the Thermostat service, or create a new one if it doesn't exist
@@ -41,7 +51,7 @@ export class ThermofridgeAccessory {
       this.accessory.addService(this.platform.Service.Thermostat);
 
     // Set the service name, this is what is displayed as the default name on the Home app
-    this.service.setCharacteristic(this.platform.Characteristic.Name, name);
+    this.service.setCharacteristic(this.platform.Characteristic.Name, this.name);
 
     // Required Characteristics
     this.service
@@ -53,7 +63,7 @@ export class ThermofridgeAccessory {
       .getCharacteristic(this.platform.Characteristic.TargetTemperature)
       .setProps({
         minValue: 0,
-        maxValue: 30,
+        maxValue: 25,
         minStep: 1,
       })
       .onGet(this.getTargetTemperature.bind(this))
@@ -68,8 +78,8 @@ export class ThermofridgeAccessory {
       .getCharacteristic(this.platform.Characteristic.CurrentTemperature)
       .onGet(this.getCurrentTemperature.bind(this));
 
-    this.targetStateFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/target-state/${serialNumber}`);
-    this.currentStateFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/current-state/${serialNumber}`);
+    this.targetStateFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/target-state/${this.serialNumber}`);
+    this.currentStateFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/current-state/${this.serialNumber}`);
   }
 
   async getMode(): Promise<CharacteristicValue> {
@@ -81,11 +91,13 @@ export class ThermofridgeAccessory {
   async setMode(value: CharacteristicValue) {
     const mode = numberToMode(value as number);
 
-    await fetch(`${API_ENDPOINT}/target-state/${this.accessory.context.device.serialNumber}`, {
+    await fetch(`${API_ENDPOINT}/target-state/${this.serialNumber}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ mode: mode }),
-    }).catch((err) => console.log(err));
+    }).catch((err) => {
+      this.platform.log.error(`Error posting mode for device ${this.serialNumber}: ${err}`);
+    });
   }
 
   async getTargetTemperature(): Promise<CharacteristicValue> {
@@ -97,22 +109,34 @@ export class ThermofridgeAccessory {
   async setTargetTemperature(value: CharacteristicValue) {
     const targetTemperature = value as number;
 
-    await fetch(`${API_ENDPOINT}/target-state/${this.accessory.context.device.serialNumber}`, {
+    await fetch(`${API_ENDPOINT}/target-state/${this.serialNumber}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ targetTemperature: targetTemperature }),
-    }).catch((err) => console.log(err));
+    }).catch((err) => {
+      this.platform.log.error(`Error posting target temperature for device ${this.serialNumber}: ${err}`);
+    });
   }
 
   async getOperatingState(): Promise<CharacteristicValue> {
-    const currentState = await this.currentStateFetcher.fetch();
+    const state = await this.currentStateFetcher.fetch();
 
-    return operatingStateToNumber(currentState.operatingState);
+    if (state.operatingState === undefined) {
+      this.platform.log.warn(`Operating state for device ${this.serialNumber} is undefined`);
+      return operatingStateToNumber("IDLE");
+    }
+
+    return operatingStateToNumber(state.operatingState);
   }
 
   async getCurrentTemperature(): Promise<CharacteristicValue> {
-    const currentState = await this.currentStateFetcher.fetch();
+    const state = await this.currentStateFetcher.fetch();
 
-    return currentState.currentTemperature;
+    if (state.currentTemperature === undefined) {
+      this.platform.log.warn(`Current temperature for device ${this.serialNumber} is undefined`);
+      return 0;
+    }
+
+    return state.currentTemperature;
   }
 }

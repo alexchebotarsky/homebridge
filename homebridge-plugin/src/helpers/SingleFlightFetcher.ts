@@ -11,7 +11,6 @@ export class SingleFlightFetcher<T> {
     if (!this.request) {
       this.request = fetch(this.endpoint)
         .then((res) => res.json())
-        .catch((err) => console.log("Error fetching:", err))
         .finally(() => {
           this.request = null;
         });
