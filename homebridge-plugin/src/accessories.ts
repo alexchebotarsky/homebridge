@@ -1,12 +1,9 @@
-import { HeatpumpAccessory } from "./accessories/heatpump.js";
-import { ThermofridgeAccessory } from "./accessories/thermofridge.js";
+import { ThermostatAccessory } from "./accessories/thermostat.js";
 
 export enum AccessoryType {
-  Heatpump = "heatpump",
-  Thermofridge = "thermofridge",
+  Thermostat = "thermostat",
 }
 
 export const AccessoryMap = {
-  [AccessoryType.Heatpump]: HeatpumpAccessory,
-  [AccessoryType.Thermofridge]: ThermofridgeAccessory,
+  [AccessoryType.Thermostat]: ThermostatAccessory,
 };

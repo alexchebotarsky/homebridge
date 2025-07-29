@@ -1,4 +1,5 @@
 import type { CharacteristicValue, PlatformAccessory, Service } from "homebridge";
+import type { Device, ThermostatDevice } from "../types/Device.js";
 
 import { HomebridgePluginPlatform } from "../platform.js";
 import { SingleFlightFetcher } from "../helpers/SingleFlightFetcher.js";
@@ -6,36 +7,39 @@ import { type Mode, modeToNumber, numberToMode } from "../types/Mode.js";
 import { type OperatingState, operatingStateToNumber } from "../types/OperatingState.js";
 import { PLUGIN_VERSION } from "../settings.js";
 
-const API_ENDPOINT = "http://localhost:8001/api/v1";
+const API_ENDPOINT = "http://localhost:8000/api/v1";
 
-type ThermofridgeTargetState = {
+type ThermostatTargetState = {
   mode: Mode;
   targetTemperature: number;
 };
 
-type ThermofridgeCurrentState = {
+type ThermostatCurrentState = {
   operatingState: OperatingState;
   currentTemperature: number;
+  currentHumidity?: number; // Not all thermostats may provide humidity
 };
 
-export class ThermofridgeAccessory {
+export class ThermostatAccessory {
   private service: Service;
 
   private readonly name: string;
   private readonly manufacturer: string;
   private readonly serialNumber: string;
   private readonly model: string;
+  private readonly showHumidity: boolean;
 
-  private targetStateFetcher: SingleFlightFetcher<ThermofridgeTargetState>;
-  private currentStateFetcher: SingleFlightFetcher<ThermofridgeCurrentState>;
+  private targetStateFetcher: SingleFlightFetcher<ThermostatTargetState>;
+  private currentStateFetcher: SingleFlightFetcher<ThermostatCurrentState>;
 
   constructor(private readonly platform: HomebridgePluginPlatform, private readonly accessory: PlatformAccessory) {
-    const { name, manufacturer, model, serialNumber } = accessory.context.device;
+    const { name, manufacturer, model, serialNumber, showHumidity } = accessory.context.device as ThermostatDevice;
 
     this.name = name;
     this.manufacturer = manufacturer;
     this.serialNumber = serialNumber;
     this.model = model;
+    this.showHumidity = showHumidity;
 
     // Set accessory information
     this.accessory
@@ -78,6 +82,12 @@ export class ThermofridgeAccessory {
       .getCharacteristic(this.platform.Characteristic.CurrentTemperature)
       .onGet(this.getCurrentTemperature.bind(this));
 
+    if (this.showHumidity) {
+      this.service
+        .getCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity)
+        .onGet(this.getCurrentHumidity.bind(this));
+    }
+
     this.targetStateFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/target-state/${this.serialNumber}`);
     this.currentStateFetcher = new SingleFlightFetcher(`${API_ENDPOINT}/current-state/${this.serialNumber}`);
   }
@@ -96,7 +106,7 @@ export class ThermofridgeAccessory {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ mode: mode }),
     }).catch((err) => {
-      this.platform.log.error(`Error posting mode for device ${this.serialNumber}: ${err}`);
+      this.platform.log.error(`Error posting mode for device '${this.serialNumber}': ${err}`);
     });
   }
 
@@ -114,7 +124,7 @@ export class ThermofridgeAccessory {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ targetTemperature: targetTemperature }),
     }).catch((err) => {
-      this.platform.log.error(`Error posting target temperature for device ${this.serialNumber}: ${err}`);
+      this.platform.log.error(`Error posting target temperature for device '${this.serialNumber}': ${err}`);
     });
   }
 
@@ -122,7 +132,7 @@ export class ThermofridgeAccessory {
     const state = await this.currentStateFetcher.fetch();
 
     if (state.operatingState === undefined) {
-      this.platform.log.warn(`Operating state for device ${this.serialNumber} is undefined`);
+      this.platform.log.warn(`Operating state for device '${this.serialNumber}' is undefined`);
       return operatingStateToNumber("IDLE");
     }
 
@@ -133,10 +143,21 @@ export class ThermofridgeAccessory {
     const state = await this.currentStateFetcher.fetch();
 
     if (state.currentTemperature === undefined) {
-      this.platform.log.warn(`Current temperature for device ${this.serialNumber} is undefined`);
+      this.platform.log.warn(`Current temperature for device '${this.serialNumber}' is undefined`);
       return 0;
     }
 
     return state.currentTemperature;
+  }
+
+  async getCurrentHumidity(): Promise<CharacteristicValue> {
+    const state = await this.currentStateFetcher.fetch();
+
+    if (state.currentHumidity === undefined) {
+      this.platform.log.warn(`Current humidity for device '${this.serialNumber}' is undefined`);
+      return 0;
+    }
+
+    return state.currentHumidity;
   }
 }

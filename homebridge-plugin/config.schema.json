@@ -11,38 +11,92 @@
         "title": "Devices",
         "description": "List of devices to register with the platform.",
         "items": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string",
-              "title": "Name",
-              "description": "Name of the accessory displayed in Homebridge and Apple Home."
+          "oneOf": [
+            {
+              "$ref": "#/definitions/GenericDevice"
             },
-            "manufacturer": {
-              "type": "string",
-              "title": "Manufacturer",
-              "description": "Manufacturer of the device."
-            },
-            "model": {
-              "type": "string",
-              "title": "Model",
-              "description": "Model name of the device."
-            },
-            "serialNumber": {
-              "type": "string",
-              "title": "Serial Number",
-              "description": "Unique identifier of the device."
-            },
-            "accessoryType": {
-              "type": "string",
-              "title": "Accessory Type",
-              "description": "Type of accessory to initialize.",
-              "enum": ["heatpump", "thermofridge"]
+            {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/GenericDevice"
+                },
+                {
+                  "type": "object",
+                  "title": "Thermostat Device",
+                  "description": "Thermostat device configuration with optional humidity support.",
+                  "properties": {
+                    "accessoryType": {
+                      "type": "string",
+                      "enum": ["thermostat"],
+                      "default": "thermostat"
+                    },
+                    "showHumidity": {
+                      "$ref": "#/definitions/showHumidity"
+                    }
+                  },
+                  "required": ["showHumidity"]
+                }
+              ]
             }
-          },
-          "required": ["name", "manufacturer", "model", "serialNumber", "accessoryType"]
+          ]
         }
       }
+    }
+  },
+  "definitions": {
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "description": "Name of the accessory displayed in Homebridge and Apple Home."
+    },
+    "manufacturer": {
+      "type": "string",
+      "title": "Manufacturer",
+      "description": "Manufacturer of the device."
+    },
+    "model": {
+      "type": "string",
+      "title": "Model",
+      "description": "Model name of the device."
+    },
+    "serialNumber": {
+      "type": "string",
+      "title": "Serial Number",
+      "description": "Unique identifier of the device."
+    },
+    "accessoryType": {
+      "type": "string",
+      "title": "Accessory Type",
+      "description": "Type of accessory to initialize.",
+      "enum": ["thermostat"]
+    },
+    "showHumidity": {
+      "type": "boolean",
+      "title": "Show Humidity",
+      "description": "Flag whether device should show humidity."
+    },
+    "GenericDevice": {
+      "type": "object",
+      "title": "Generic Device",
+      "description": "Generic device configuration.",
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/name"
+        },
+        "manufacturer": {
+          "$ref": "#/definitions/manufacturer"
+        },
+        "model": {
+          "$ref": "#/definitions/model"
+        },
+        "serialNumber": {
+          "$ref": "#/definitions/serialNumber"
+        },
+        "accessoryType": {
+          "$ref": "#/definitions/accessoryType"
+        }
+      },
+      "required": ["name", "manufacturer", "model", "serialNumber", "accessoryType"]
     }
   }
 }

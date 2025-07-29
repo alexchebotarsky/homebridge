@@ -22,7 +22,7 @@ export class HomebridgePluginPlatform implements DynamicPlatformPlugin {
     this.Service = api.hap.Service;
     this.Characteristic = api.hap.Characteristic;
 
-    this.log.debug("Finished initializing platform:", this.config.name);
+    this.log.debug(`Finished initializing platform: ${this.config.name}`);
 
     // This event is fired when Homebridge has restored all cached accessories
     // from disk. Registering new devices should only be done after this.
@@ -33,12 +33,18 @@ export class HomebridgePluginPlatform implements DynamicPlatformPlugin {
 
   // This method is called by Homebridge for each accessory in the cache
   configureAccessory(accessory: PlatformAccessory) {
-    this.log.info("Restoring accessory from cache:", accessory.displayName);
+    this.log.info(`Restoring accessory from cache: ${accessory.displayName}`);
 
     const device: Device = accessory.context.device;
 
-    // Create the accessory handler based on the device type
+    // Find the accessory handler based on the device type
     const Accessory = AccessoryMap[device.accessoryType as AccessoryType];
+    if (!Accessory) {
+      this.log.error(`Unsupported accessory type: ${device.accessoryType}`);
+      return;
+    }
+
+    // Create a new instance of the accessory handler
     new Accessory(this, accessory);
 
     // Add cached accessory to the accessories list
@@ -56,7 +62,7 @@ export class HomebridgePluginPlatform implements DynamicPlatformPlugin {
 
       // Register accessory if it's not yet registered
       if (!this.accessories.has(uuid)) {
-        this.log.info("Adding new accessory:", device.name);
+        this.log.info(`Adding new accessory: ${device.name}`);
 
         // Create new accessory
         const accessory = new this.api.platformAccessory(device.name, uuid);
@@ -74,7 +80,7 @@ export class HomebridgePluginPlatform implements DynamicPlatformPlugin {
     // Remove cached accessories that are no longer in the list of devices
     for (const [uuid, accessory] of this.accessories) {
       if (!deviceUUIDs.includes(uuid)) {
-        this.log.info("Removing no longer accessible accessory from cache:", accessory.displayName);
+        this.log.info(`Removing no longer accessible accessory from cache: ${accessory.displayName}`);
         this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
         this.accessories.delete(uuid);
       }
