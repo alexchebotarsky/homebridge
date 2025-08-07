@@ -28,7 +28,7 @@
                     "model": "Thermofridge",
                     "serialNumber": "3a423384-9baf-493f-a478-157cfa7c33a5",
                     "accessoryType": "thermostat",
-                    "showHumidity": true
+                    "showHumidity": false
                 }
             ]
         }
