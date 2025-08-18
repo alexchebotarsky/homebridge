@@ -30,6 +30,14 @@
                     "serialNumber": "3a423384-9baf-493f-a478-157cfa7c33a5",
                     "accessoryType": "thermostat",
                     "showHumidity": false
+                },
+                {
+                    "name": "Heatpump",
+                    "manufacturer": "Toshiba",
+                    "model": "RAS-13SKV-E",
+                    "serialNumber": "72701548",
+                    "accessoryType": "thermostat",
+                    "showHumidity": true
                 }
             ]
         }
