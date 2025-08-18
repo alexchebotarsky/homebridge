@@ -25,18 +25,20 @@
             "devices": [
                 {
                     "name": "Thermofridge",
+                    "accessoryType": "thermostat",
+                    "deviceId": "3a423384-9baf-493f-a478-157cfa7c33a5",
                     "manufacturer": "Alex Chebotarsky",
                     "model": "Thermofridge",
                     "serialNumber": "3a423384-9baf-493f-a478-157cfa7c33a5",
-                    "accessoryType": "thermostat",
                     "showHumidity": false
                 },
                 {
                     "name": "Heatpump",
+                    "accessoryType": "thermostat",
+                    "deviceId": "heatpump-controller",
                     "manufacturer": "Toshiba",
                     "model": "RAS-13SKV-E",
                     "serialNumber": "72701548",
-                    "accessoryType": "thermostat",
                     "showHumidity": true
                 }
             ]

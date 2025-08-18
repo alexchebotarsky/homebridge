@@ -4,10 +4,11 @@ import { AccessoryType } from "../accessories.js";
 // properties. Otherwise, use the Device type and it will fallback to this.
 type GenericDevice = {
   name: string;
+  accessoryType: AccessoryType;
+  deviceId: string;
   manufacturer: string;
   model: string;
   serialNumber: string;
-  accessoryType: AccessoryType;
 };
 
 export type ThermostatDevice = GenericDevice & {

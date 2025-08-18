@@ -12,28 +12,11 @@
         "description": "List of devices to register with the platform.",
         "items": {
           "type": "object",
-          "title": "Generic Device",
-          "description": "Generic device configuration.",
           "properties": {
             "name": {
               "type": "string",
               "title": "Name",
-              "description": "Name of the accessory displayed in Homebridge and Apple Home."
-            },
-            "manufacturer": {
-              "type": "string",
-              "title": "Manufacturer",
-              "description": "Manufacturer of the device."
-            },
-            "model": {
-              "type": "string",
-              "title": "Model",
-              "description": "Model name of the device."
-            },
-            "serialNumber": {
-              "type": "string",
-              "title": "Serial Number",
-              "description": "Unique identifier of the device."
+              "description": "Display name for the device."
             },
             "accessoryType": {
               "type": "string",
@@ -41,13 +24,33 @@
               "description": "Type of accessory to initialize.",
               "enum": ["thermostat"]
             },
+            "deviceId": {
+              "type": "string",
+              "title": "Device ID",
+              "description": "Unique identifier for controlling the device."
+            },
+            "manufacturer": {
+              "type": "string",
+              "title": "Manufacturer",
+              "description": "Manufacturer metadata for the device."
+            },
+            "model": {
+              "type": "string",
+              "title": "Model",
+              "description": "Model metadata for the device."
+            },
+            "serialNumber": {
+              "type": "string",
+              "title": "Serial Number",
+              "description": "Serial number metadata for the device."
+            },
             "showHumidity": {
               "type": "boolean",
               "title": "Show Humidity",
               "description": "Flag whether device should show humidity."
             }
           },
-          "required": ["name", "manufacturer", "model", "serialNumber", "accessoryType"]
+          "required": ["name", "manufacturer", "model", "serialNumber", "deviceId", "accessoryType"]
         }
       }
     }

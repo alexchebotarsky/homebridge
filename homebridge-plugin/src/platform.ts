@@ -57,7 +57,7 @@ export class HomebridgePluginPlatform implements DynamicPlatformPlugin {
 
     // Register devices or load them from cache
     for (const device of devices) {
-      const uuid = this.api.hap.uuid.generate(device.serialNumber);
+      const uuid = this.api.hap.uuid.generate(device.deviceId);
       deviceUUIDs.push(uuid);
 
       // Register accessory if it's not yet registered
