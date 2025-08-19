@@ -44,10 +44,20 @@
               "title": "Serial Number",
               "description": "Serial number metadata for the device."
             },
+            "minTemperature": {
+              "type": "number",
+              "title": "Minimum Temperature",
+              "description": "Minimum temperature limit for the thermostat."
+            },
+            "maxTemperature": {
+              "type": "number",
+              "title": "Maximum Temperature",
+              "description": "Maximum temperature limit for the thermostat."
+            },
             "showHumidity": {
               "type": "boolean",
               "title": "Show Humidity",
-              "description": "Flag whether device should show humidity."
+              "description": "Flag whether the thermostat should show humidity."
             }
           },
           "required": ["name", "manufacturer", "model", "serialNumber", "deviceId", "accessoryType"]

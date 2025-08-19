@@ -13,6 +13,8 @@ type GenericDevice = {
 
 export type ThermostatDevice = GenericDevice & {
   accessoryType: AccessoryType.Thermostat;
+  minTemperature: number;
+  maxTemperature: number;
   showHumidity: boolean;
 };
 

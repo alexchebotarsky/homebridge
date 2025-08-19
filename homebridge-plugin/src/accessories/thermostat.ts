@@ -30,8 +30,8 @@ export class ThermostatAccessory {
   private currentStateFetcher: SingleFlightFetcher<ThermostatCurrentState>;
 
   constructor(private readonly platform: HomebridgePluginPlatform, private readonly accessory: PlatformAccessory) {
-    const { name, deviceId, manufacturer, model, serialNumber, showHumidity } = accessory.context
-      .device as ThermostatDevice;
+    const { name, deviceId, manufacturer, model, serialNumber, minTemperature, maxTemperature, showHumidity } =
+      accessory.context.device as ThermostatDevice;
 
     this.name = name;
     this.deviceId = deviceId;
@@ -61,8 +61,8 @@ export class ThermostatAccessory {
     this.service
       .getCharacteristic(this.platform.Characteristic.TargetTemperature)
       .setProps({
-        minValue: 0,
-        maxValue: 25,
+        minValue: minTemperature,
+        maxValue: maxTemperature,
         minStep: 1,
       })
       .onGet(this.getTargetTemperature.bind(this))

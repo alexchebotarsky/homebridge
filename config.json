@@ -30,6 +30,8 @@
                     "manufacturer": "Alex Chebotarsky",
                     "model": "Thermofridge",
                     "serialNumber": "3a423384-9baf-493f-a478-157cfa7c33a5",
+                    "minTemperature": 0,
+                    "maxTemperature": 25,
                     "showHumidity": false
                 },
                 {
@@ -39,6 +41,8 @@
                     "manufacturer": "Toshiba",
                     "model": "RAS-13SKV-E",
                     "serialNumber": "72701548",
+                    "minTemperature": 17,
+                    "maxTemperature": 30,
                     "showHumidity": true
                 }
             ]
