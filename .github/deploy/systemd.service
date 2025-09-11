@@ -1,0 +1,15 @@
+[Unit]
+Description=${REPO_NAME} Service
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=${USER}
+WorkingDirectory=${GITHUB_WORKSPACE}
+ExecStart=docker compose up --build
+ExecStop=docker compose down
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
