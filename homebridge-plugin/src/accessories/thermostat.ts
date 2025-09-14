@@ -1,5 +1,5 @@
-import type { CharacteristicValue, PlatformAccessory, Service } from "homebridge";
-import type { Device, ThermostatDevice } from "../types/Device.js";
+import { type CharacteristicValue, type PlatformAccessory, type Service } from "homebridge";
+import type { ThermostatDevice } from "../types/Device.js";
 
 import { HomebridgePluginPlatform } from "../platform.js";
 import { SingleFlightFetcher } from "../helpers/SingleFlightFetcher.js";
@@ -102,6 +102,9 @@ export class ThermostatAccessory {
       body: JSON.stringify({ mode: mode }),
     }).catch((err) => {
       this.platform.log.error(`Error posting mode for device '${this.deviceId}': ${err}`);
+
+      const { HapStatusError, HAPStatus } = this.platform.api.hap;
+      throw new HapStatusError(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
     });
   }
 
@@ -120,6 +123,9 @@ export class ThermostatAccessory {
       body: JSON.stringify({ targetTemperature: targetTemperature }),
     }).catch((err) => {
       this.platform.log.error(`Error posting target temperature for device '${this.deviceId}': ${err}`);
+
+      const { HapStatusError, HAPStatus } = this.platform.api.hap;
+      throw new HapStatusError(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
     });
   }
 
@@ -128,7 +134,9 @@ export class ThermostatAccessory {
 
     if (state.operatingState === undefined) {
       this.platform.log.warn(`Operating state for device '${this.deviceId}' is undefined`);
-      return operatingStateToNumber("IDLE");
+
+      const { HapStatusError, HAPStatus } = this.platform.api.hap;
+      throw new HapStatusError(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
     }
 
     return operatingStateToNumber(state.operatingState);
@@ -139,7 +147,9 @@ export class ThermostatAccessory {
 
     if (state.currentTemperature === undefined) {
       this.platform.log.warn(`Current temperature for device '${this.deviceId}' is undefined`);
-      return 0;
+
+      const { HapStatusError, HAPStatus } = this.platform.api.hap;
+      throw new HapStatusError(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
     }
 
     return state.currentTemperature;
@@ -150,7 +160,9 @@ export class ThermostatAccessory {
 
     if (state.currentHumidity === undefined) {
       this.platform.log.warn(`Current humidity for device '${this.deviceId}' is undefined`);
-      return 0;
+
+      const { HapStatusError, HAPStatus } = this.platform.api.hap;
+      throw new HapStatusError(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
     }
 
     return state.currentHumidity;
