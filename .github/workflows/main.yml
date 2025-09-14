@@ -24,3 +24,47 @@ jobs:
       - name: Start/Restart systemd service
         run: |
           sudo systemctl restart ${REPO_NAME}.service
+
+      - name: Wait for services to become healthy
+        run: |
+          TIMEOUT=120
+          SLEEP_INTERVAL=1
+          SERVICES=($(docker compose -f $GITHUB_WORKSPACE/docker-compose.yml config --services))
+
+          for i in $(seq 1 $TIMEOUT); do
+            HEALTHY_SERVICES=0
+            for SERVICE in "${SERVICES[@]}"; do
+              CONTAINER=$(docker compose -f $GITHUB_WORKSPACE/docker-compose.yml ps -q "$SERVICE")
+              if [[ "$CONTAINER" == "" ]]; then
+                # Wait for the container to be created
+                continue
+              fi
+
+              STATUS=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{end}}' "$CONTAINER")
+              if [[ "$STATUS" == "" ]]; then
+                STATUS="no-healthcheck"
+              fi
+
+              if [[ "$STATUS" == "healthy" || "$STATUS" == "no-healthcheck" ]]; then
+                HEALTHY_SERVICES=$(($HEALTHY_SERVICES + 1))
+                continue
+              elif [[ "$STATUS" == "unhealthy" ]]; then
+                echo "Service $SERVICE is unhealthy"
+                exit 1
+              fi
+            done
+
+            # If all services are healthy, leave early
+            if (( $HEALTHY_SERVICES == ${#SERVICES[@]} )); then
+              break
+            fi
+
+            sleep $SLEEP_INTERVAL
+          done
+
+          if (( $HEALTHY_SERVICES == ${#SERVICES[@]} )); then
+            echo "All services are healthy"
+          else
+            echo "Some services are not healthy after $TIMEOUT seconds"
+            exit 1
+          fi
