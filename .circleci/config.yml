@@ -1,0 +1,75 @@
+version: 2.1
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - deploy:
+          filters:
+            branches:
+              only: main
+
+jobs:
+  deploy:
+    machine:
+      resource_class: alex/raspberrypi
+    working_directory: /var/lib/circleci-runner/<< pipeline.project.slug >>
+    steps:
+      - checkout
+
+      - run:
+          name: Create/Update systemd service
+          command: |
+            SERVICE_FILE="/etc/systemd/system/${CIRCLE_PROJECT_REPONAME}.service"
+            TEMPLATE_FILE="./.circleci/systemd.service"
+            envsubst < $TEMPLATE_FILE | sudo tee $SERVICE_FILE
+
+            sudo systemctl daemon-reload
+            sudo systemctl enable ${CIRCLE_PROJECT_REPONAME}.service
+
+      - run:
+          name: Start/Restart systemd service
+          command: |
+            sudo systemctl restart ${CIRCLE_PROJECT_REPONAME}.service
+
+      - run:
+          name: Wait for services to become healthy
+          command: |
+            TIMEOUT=120
+            SLEEP_INTERVAL=1
+            SERVICES=($(docker compose -f docker-compose.yml config --services))
+
+            for i in $(seq 1 $TIMEOUT); do
+              HEALTHY_SERVICES=0
+              for SERVICE in "${SERVICES[@]}"; do
+                CONTAINER=$(docker compose -f docker-compose.yml ps -q "$SERVICE")
+                if [[ "$CONTAINER" == "" ]]; then
+                  continue
+                fi
+
+                STATUS=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{end}}' "$CONTAINER")
+                if [[ "$STATUS" == "" ]]; then
+                  STATUS="no-healthcheck"
+                fi
+
+                if [[ "$STATUS" == "healthy" || "$STATUS" == "no-healthcheck" ]]; then
+                  HEALTHY_SERVICES=$(($HEALTHY_SERVICES + 1))
+                elif [[ "$STATUS" == "unhealthy" ]]; then
+                  echo "Service $SERVICE is unhealthy"
+                  exit 1
+                fi
+              done
+
+              if (( $HEALTHY_SERVICES == ${#SERVICES[@]} )); then
+                break
+              fi
+
+              sleep $SLEEP_INTERVAL
+            done
+
+            if (( $HEALTHY_SERVICES == ${#SERVICES[@]} )); then
+              echo "All services are healthy"
+            else
+              echo "Some services are not healthy after $TIMEOUT seconds"
+              exit 1
+            fi

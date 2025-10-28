@@ -1,12 +1,12 @@
 [Unit]
-Description=${REPO_NAME} Service
+Description=${CIRCLE_PROJECT_REPONAME} Service
 After=network.target docker.service
 Requires=docker.service
 
 [Service]
 Type=simple
 User=${USER}
-WorkingDirectory=${GITHUB_WORKSPACE}
+WorkingDirectory=${CIRCLE_WORKING_DIRECTORY}
 ExecStart=docker compose up --build
 ExecStop=docker compose down
 Restart=on-failure
