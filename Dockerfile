@@ -1,4 +1,4 @@
-FROM homebridge/homebridge:2025-08-07
+FROM homebridge/homebridge:2026-10-23
 
 # Remove strict plugin resolution and allow locally linked plugins to be used
 RUN sed -i 's/ --strict-plugin-resolution//g' /opt/homebridge/start.sh
